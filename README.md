@@ -16,8 +16,8 @@ Images are maintained on [quay.io/jhansen/git-sync](https://quay.io/jhansen/git-
     make docker-build
 
     # run the git-sync container
-    docker run -e GIT_SYNC_REPO=https://github.com/kubernetes/kubernetes \
-            -e GIT_SYNC_DEST=/git -e GIT_SYNC_BRANCH=gh-pages \
+    docker run -e GIT_SYNC_REPO=https://github.com/slack/basic-site \
+            -e GIT_SYNC_DEST=/git -e GIT_SYNC_BRANCH=master \
             -e GIT_SYNC_WAIT=600 \
             -v /git-data:/git git-sync
 ```
