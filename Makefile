@@ -12,7 +12,7 @@ LDFLAGS := "-s"
 
 .PHONY: info all clean build docker-build push
 all: info clean build docker-build push clean
-	echo "Done! ${IMAGE}:${VERSION}"
+	echo "Done! ${IMAGE}"
 
 clean:
 	rm -f ${BINDIR}/git-sync
