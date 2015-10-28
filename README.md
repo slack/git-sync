@@ -30,6 +30,7 @@ Images are maintained on [quay.io/jhansen/git-sync](https://quay.io/jhansen/git-
 * `GIT_SYNC_BRANCH`: Branch to sync [Default: master]
 * `GIT_SYNC_REV`: Git revision to sync [Default: HEAD]
 * `GIT_SYNC_DEST`: Destination path for sync
+* `GIT_SYNC_DEST_MODE`: Mode for destination path [Default: 755]
 * `GIT_SYNC_WAIT`: Time in seconds to wait before syncing again
 
 ## License

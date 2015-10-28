@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/*
+GIT_SYNC_DEST_MODE added by Jason Hansen <jhansen@deis.com>
+*/
+
 // git-sync is a command that pull a git repository to a local directory.
 
 package main // import "k8s.io/contrib/git-sync"
@@ -33,6 +37,7 @@ import (
 var flRepo = flag.String("repo", envString("GIT_SYNC_REPO", ""), "git repo url")
 var flBranch = flag.String("branch", envString("GIT_SYNC_BRANCH", "master"), "git branch")
 var flRev = flag.String("rev", envString("GIT_SYNC_BRANCH", "HEAD"), "git rev")
+var flMode = flag.String("mode", envString("GIT_SYNC_DEST_MODE", "0755"), "directory permission of the destination path")
 var flDest = flag.String("dest", envString("GIT_SYNC_DEST", ""), "destination path")
 var flWait = flag.Int("wait", envInt("GIT_SYNC_WAIT", 0), "number of seconds to wait before exit")
 
@@ -55,7 +60,7 @@ func envInt(key string, def int) int {
 	return def
 }
 
-const usage = "usage: GIT_SYNC_REPO= GIT_SYNC_DEST= [GIT_SYNC_BRANCH= GIT_SYNC_WAIT=] git-sync -repo GIT_REPO_URL -dest PATH [-branch -wait]"
+const usage = "usage: GIT_SYNC_REPO= GIT_SYNC_DEST= [GIT_SYNC_DEST_MODE= GIT_SYNC_BRANCH= GIT_SYNC_WAIT=] git-sync -repo GIT_REPO_URL -dest PATH [-mode -branch -wait]"
 
 func main() {
 	flag.Parse()
@@ -66,8 +71,13 @@ func main() {
 	if _, err := exec.LookPath("git"); err != nil {
 		log.Fatalf("required git executable not found: %v", err)
 	}
+	var modeString string = *flMode
+	mode, err := strconv.ParseInt(modeString, 0, 64)
+	if err != nil {
+		log.Fatalf("could not convert %s to int: %v", flMode, err)
+	}
 	for {
-		if err := syncRepo(*flRepo, *flDest, *flBranch, *flRev); err != nil {
+		if err := syncRepo(*flRepo, *flDest, *flBranch, *flRev, os.FileMode(mode)); err != nil {
 			log.Fatalf("error syncing repo: %v", err)
 		}
 		log.Printf("wait %d seconds", *flWait)
@@ -77,7 +87,7 @@ func main() {
 }
 
 // syncRepo syncs the branch of a given repository to the destination at the given rev.
-func syncRepo(repo, dest, branch, rev string) error {
+func syncRepo(repo, dest, branch, rev string, mode os.FileMode) error {
 	gitRepoPath := path.Join(dest, ".git")
 	_, err := os.Stat(gitRepoPath)
 	switch {
@@ -110,5 +120,10 @@ func syncRepo(repo, dest, branch, rev string) error {
 		return fmt.Errorf("error running command %q : %v: %s", strings.Join(cmd.Args, " "), err, string(output))
 	}
 	log.Printf("reset %q: %v", rev, string(output))
+
+	err = os.Chmod(dest, mode)
+	if err != nil {
+		return fmt.Errorf("error running chmod: %v", err)
+	}
 	return nil
 }
